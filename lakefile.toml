@@ -1,0 +1,10 @@
+name = "quick-start"
+version = "0.1.0"
+defaultTargets = ["quick-start"]
+
+[[lean_lib]]
+name = "QuickStart"
+
+[[lean_exe]]
+name = "quick-start"
+root = "Main"
