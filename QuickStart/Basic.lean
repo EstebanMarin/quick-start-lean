@@ -1,3 +1,6 @@
+-- https://lean-lang.org/functional_programming_in_lean
+
+
 -- Define a constant string
 def hello := "world"
 
@@ -66,3 +69,97 @@ def zeroX (p : Point) : Point :=
 -- Mutable version
 def zeroX2 (p : Point) : Point :=
   { x := 0, y := p.y }
+
+
+-- Data types and patterns
+-- Lets talk about inductive data types
+/-
+inductive Bool where
+  | false : Bool
+  | true : Bool
+-/
+
+/- another exameple
+
+inductive Nat where
+  | zero : Nat
+  | succ (n : Nat) : Nat
+
+-/
+
+/-
+Datatypes that allow choices are called sum types and datatypes that can include instances of
+themselves are called recursive datatypes. Recursive sum types are called inductive datatypes
+-/
+
+-- Pattern Matching
+
+def isZero (n : Nat) : Bool :=
+  match n with
+  | Nat.zero => true
+  | Nat.succ _ => false
+
+#eval isZero 0
+#eval isZero 1
+
+-- Patern matching with structures
+def depth (p : Point3D) : Float :=
+  match p with
+  | { x:= _, y := _, z := d } => d
+
+#eval depth { x := 1.0, y := 2.0, z := 3.0 }
+
+/-
+This pattern of thought is typical for writing recursive functions
+on Nat. First, identify what to do for zero.
+Then, determine how to transform a result for an arbitrary Nat
+into a result for its successor, and apply this transformation to the
+result of the recursive call.
+This pattern is called structural recursion.
+-/
+
+/-
+Unlike many languages, Lean ensures by default that every recursive function will
+eventually reach a base case. From a programming perspective, this rules out accidental infinite loops.
+But this feature is especially important when proving theorems, where infinite loops cause major difficulties.
+A consequence of this is that Lean will not accept a version of even that attempts to invoke itself recursively
+on the original number:
+
+def evenLoops (n : Nat) : Bool :=
+  match n with
+  | Nat.zero => true
+  | Nat.succ k => not (evenLoops n)
+
+fail to show termination for
+  evenLoops
+with errors
+structural recursion cannot be used
+
+well-founded recursion cannot be used, 'evenLoops' does not take any (non-fixed) arguments
+
+-/
+
+/-
+Not every function can be easily written using structural recursion.
+The understanding of addition as iterated Nat.succ, multiplication as iterated addition,
+and subtraction as iterated predecessor suggests an implementation of division as iterated subtraction.
+In this case, if the numerator is less than the divisor, the result is zero.
+Otherwise, the result is the successor of dividing the numerator minus the divisor by the divisor.
+-/
+
+def plus (n : Nat) (k : Nat) : Nat :=
+  match k with
+  | Nat.zero => n
+  | Nat.succ k' => Nat.succ (plus n k')
+
+def times (n : Nat) (k : Nat) : Nat :=
+  match k with
+  | Nat.zero => Nat.zero
+  | Nat.succ k' => plus n (times n k')
+
+def minus (n : Nat) (k : Nat) : Nat :=
+  match k with
+  | Nat.zero => n
+  | Nat.succ k' => Nat.pred (minus n k')
+
+#eval Nat.succ 0
